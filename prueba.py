@@ -8,12 +8,14 @@ import re
 import pdfplumber
 import pandas as pd
 from collections import namedtuple
-
+import openpyxl
 
 # In[301]:
 
 
 tipo10PorCiento = namedtuple('Line', 'Base')
+excel = openpyxl.load_workbook('./Plantillas modelos impuestos UHY.xls')
+sheet1 = excel['IVA']
 
 
 # In[302]:
@@ -49,8 +51,7 @@ with pdfplumber.open(file) as pdf:
             if(line.find('Ejercicio ') != -1):
                 month = monthRegex.search(line).group(1)
                 print(month) 
-            elif line.startswith('Régimen general'):
-                 
+            elif line.startswith('Régimen general'):                 
                 if(line.startswith('04')  != -1):
                     items = line.split()
                     print(line)   
@@ -63,7 +64,11 @@ with pdfplumber.open(file) as pdf:
 # In[293]:
 
 
-lines[:1]
+lines
+df = pd.DataFrame(lines)
+df.head()
+sheet1.cell(column= month,row=8) = julio
+excel.save('Plantillas modelos impuestos UHY.xls')
 
 
 # In[ ]:
