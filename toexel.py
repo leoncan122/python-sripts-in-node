@@ -39,8 +39,8 @@ with pdfplumber.open(file) as pdf:
             elif((line.startswith('Régimen general')) & (line.find('04')  != -1)): 
                 items = line.split()
                 #print(items)
-                bases = items[4]
-                cuotas = items[8]
+                bases = float(items[4].replace(".","").replace(",","."))
+                cuotas = float(items[8].replace(".","").replace(",",".")) 
                 sheet1.cell(column= month,row=8, value = bases)
                 sheet1.cell(column= month,row=20, value = cuotas)
                 lines.append(tipo10PorCiento(items[4]))
@@ -51,8 +51,8 @@ with pdfplumber.open(file) as pdf:
               
                 items = line.split()
                 #print(items)
-                bases = items[1]
-                cuotas = items[5]
+                bases = float(items[1].replace(".","").replace(",","."))               
+                cuotas = float( items[5].replace(".","").replace(",","."))
                 sheet1.cell(column= month,row=9, value = bases)
                 sheet1.cell(column= month,row=21, value = cuotas)
                 
@@ -60,8 +60,8 @@ with pdfplumber.open(file) as pdf:
             elif(line.startswith('Adquisiciones intracomunitarias de bienes y servicios.')  ):
                 items = line.split()
                 #print(items)
-                bases = items[8]
-                cuotas = items[10]
+                bases = float(items[8].replace(".","").replace(",","."))  
+                cuotas = float( items[10].replace(".","").replace(",","."))
                 sheet1.cell(column= month,row=22, value = cuotas)
                 sheet1.cell(column= month,row=10, value = bases)
                 
@@ -76,8 +76,8 @@ with pdfplumber.open(file) as pdf:
             elif((line.find('bases y cuotas') != -1 ) & (line.find('14') != -1  )):
                items = line.split()
                #print(items)
-               cuotas = items[9]
-               bases = items[7]
+               cuotas = float( items[9].replace(".","").replace(",","."))               
+               bases = float(items[7].replace(".","").replace(",","."))               
                sheet1.cell(column= month,row=12, value = bases)
                sheet1.cell(column= month,row=24, value = cuotas)
                 
@@ -86,15 +86,15 @@ with pdfplumber.open(file) as pdf:
             elif(line.startswith('Por cuotas soportadas en operaciones interiores corrientes')):
                items = line.split()
                
-               cuotas = items[11]
-               bases = items[9]
+               cuotas = float( items[11].replace(".","").replace(",","."))
+               bases = float(items[9].replace(".","").replace(",","."))      
                sheet1.cell(column= month,row=31, value = bases)
                sheet1.cell(column= month,row=41, value = cuotas)
             elif(line.startswith('Por cuotas soportadas en operaciones interiores con bienes de inversión')):
                items = line.split()
               
-               cuotas = items[14]
-               bases = items[12]
+               cuotas = float( items[14].replace(".","").replace(",","."))
+               bases = float(items[12].replace(".","").replace(",","."))
                sheet1.cell(column= month,row=32, value = bases)
                sheet1.cell(column= month,row=42, value = cuotas)      
              
@@ -104,8 +104,8 @@ with pdfplumber.open(file) as pdf:
             elif(line.startswith('En adquisiciones intracomunitarias de bienes y servicios corrientes')):
                items = line.split()
                # print(items)
-               cuotas = items[12]
-               bases = items[10]
+               cuotas = float( items[12].replace(".","").replace(",","."))
+               bases = float(items[10].replace(".","").replace(",","."))
                sheet1.cell(column= month,row=35, value = bases)
                sheet1.cell(column= month,row=45, value = cuotas)
                 
@@ -113,8 +113,8 @@ with pdfplumber.open(file) as pdf:
             
             elif((line.find('40') != -1 ) & (line.find('41') != -1  )):
                items = line.split()               
-               cuotas = items[8]
-               bases = items[6]
+               cuotas = float(items[8].replace(".","").replace(",","."))
+               bases = float(items[6].replace(".","").replace(",","."))
                sheet1.cell(column= month,row=37, value = bases)
                sheet1.cell(column= month,row=47, value = cuotas)   
             
@@ -126,12 +126,12 @@ with pdfplumber.open(file) as pdf:
             
             elif(line.startswith('Exportaciones y operaciones asimiladas')):
                items = line.split()                        
-               sheet1.cell(column= month,row=61, value = items[6])
+               sheet1.cell(column= month,row=61, value = float(items[6].replace(".","").replace(",",".")))
            
             elif((line.find('61') != -1 ) & (line.find('Operaciones') != -1 ) ):
                items = line.split()
                print(items)               
-               sheet1.cell(column= month,row=62, value = items[17])
+               sheet1.cell(column= month,row=62, value = float(items[17].replace(".","").replace(",",".")))
            
             
             #TODO ELIF Importes de las entregas de bienes y prestaciones de servicios...
