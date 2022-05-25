@@ -17,7 +17,7 @@ sheet1 = excel['IVA']
 
 
 
-file = './303 2019 07.pdf'
+file = './uploads/pdfToRead.pdf'
 monthRegex = re.compile(r"(0?[1-9]|[1][0-2])$")
 month = ''
 lines = []
