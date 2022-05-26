@@ -6,15 +6,18 @@ import pdfplumber
 # import pandas as pd
 from collections import namedtuple
 import openpyxl
+import sys
 
 
 
 
-tipo10PorCiento = namedtuple('Line', 'Base')
 excel = openpyxl.load_workbook(filename = './Plantillas modelos impuestos UHY.xlsx')
-sheet1 = excel['IVA']
 
 
+
+modelForm = sys.stdin.readline()
+print(modelForm)
+print(sys.stdin.readline())
 
 
 file = './uploads/pdfToRead.pdf'
@@ -24,11 +27,82 @@ lines = []
 total_check = 0
 cuotas = 0
 bases = 0
-with pdfplumber.open(file) as pdf:
+
+
+
+def model111IRPF():
+
+   sheet1 = excel['IRPF 111']
+   monthRegex = re.compile(r"(0?[1-9]|[1][0-2])$")
+   month = ''
+   with pdfplumber.open(file) as pdf:
+       pages = pdf.pages
+       for page in pdf.pages:
+           text = page.extract_text()
+           for line in text.split('\n') :
+               #print(line.split())
+               if(line.find('Período') != -1):
+                   month = int(monthRegex.search(line).group(1)) + 3
+                   items = line.split()
+                   print(month)
+                   print(items)
+
+
+               elif((line.startswith('Rendimientos dinerarios')) & (line.find('01')  != -1)): 
+                   items = line.split()
+
+                   perceptores = float(items[4].replace(".","").replace(",","."))
+                   percepciones = float(items[6].replace(".","").replace(",","."))
+                   retenciones = float(items[8].replace(".","").replace(",","."))
+                   sheet1.cell(column= month,row=8, value = perceptores)
+                   sheet1.cell(column= month,row=9, value = percepciones)
+                   sheet1.cell(column= month,row=10, value = retenciones)
+               elif((line.startswith('Rendimientos en especie')) & (line.find('04')  != -1)):
+                   #TODO
+                   items = line.split()
+
+               elif((line.startswith('Rendimientos dinerarios')) & (line.find('07')  != -1)): 
+                   items = line.split()
+                   print(items)
+                   perceptores = float(items[4].replace(".","").replace(",","."))
+                   percepciones = float(items[6].replace(".","").replace(",","."))
+                   retenciones = float(items[8].replace(".","").replace(",","."))
+                   sheet1.cell(column= month,row=20, value = perceptores)
+                   sheet1.cell(column= month,row=21, value = percepciones)
+                   sheet1.cell(column= month,row=22, value = retenciones)
+               elif((line.startswith('Rendimientos en especie')) & (line.find('10')  != -1)):
+                   #TODO
+                   items = line.split()
+               elif((line.startswith('Premios en metálico')) & (line.find('13')  != -1)):
+                   #TODO
+                   items = line.split()
+               elif((line.startswith('Premios en especie')) & (line.find('16')  != -1)):
+                   #TODO
+                   items = line.split() 
+               elif((line.startswith('Percepciones dinerarias')) & (line.find('19')  != -1)):
+                   #TODO
+                   items = line.split()
+               elif((line.startswith('Percepciones en especie')) & (line.find('22')  != -1)):
+                   #TODO
+                   items = line.split()
+               elif((line.startswith('Contraprestaciones dinerarias o en especie')) & (line.find('25')  != -1)):
+                   #TODO
+                   items = line.split()
+               elif((line.startswith('Total liquidación')) & (line.find('25')  != -1)):
+                   #TODO
+                   items = line.split()
+               
+              
+   
+
+
+def model303Iva():
+   sheet1 = excel['IVA']
+   with pdfplumber.open(file) as pdf:
     pages = pdf.pages
     for page in pdf.pages:
         text = page.extract_text()
-        for line in text.split('\n') :            
+        for line in text.split('\n'):            
             if(line.find('Ejercicio ') != -1):
                 month = int(monthRegex.search(line).group(1)) + 4
                 
@@ -43,7 +117,7 @@ with pdfplumber.open(file) as pdf:
                 cuotas = float(items[8].replace(".","").replace(",",".")) 
                 sheet1.cell(column= month,row=8, value = bases)
                 sheet1.cell(column= month,row=20, value = cuotas)
-                lines.append(tipo10PorCiento(items[4]))
+               #  lines.append(tipo10PorCiento(items[4]))
                    
                 items = line.split()
              # 21%   
@@ -147,20 +221,24 @@ with pdfplumber.open(file) as pdf:
             elif((line.find('66') != -1 ) & (line.find('65') != -1 ) ):
                 items = line.split()
                 print(items)               
-                sheet1.cell(column= month,row=57, value = items[9])
-            
+                sheet1.cell(column= month,row=57, value = items[9])           
         
+            #excel.save('Plantillas modelos impuestos UHY.xlsx')
 
 
 
+def getDataFromPdfAndSaveExcel():
+   print(modelForm)
+   if(modelForm == "303"):
+      print('pasa 303')
+      model303Iva()
+      excel.save('Plantillas modelos impuestos UHY.xlsx')
+   elif(modelForm == "111"):
+      print('pasa 111')
+      model111IRPF()
+      excel.save('Plantillas modelos impuestos UHY.xlsx')
 
-
-
-excel.save('Plantillas modelos impuestos UHY.xlsx')
-
-
-
-
-
+getDataFromPdfAndSaveExcel()
+sys.stdout.flush()
 
 

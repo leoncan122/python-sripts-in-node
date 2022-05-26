@@ -2,10 +2,10 @@ const express = require('express');
 const app = express();
 let cors = require('cors');
 const multer = require('multer');
-var router = express.Router();
 
 const port = process.env.PORT || 3000;
 const spawn = require('child_process').spawn;
+let pythonToExcelProcess;
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -21,11 +21,11 @@ const upload = multer({ storage: storage });
 app.use(cors({ exposedHeaders: '*' }));
 app.use(express.json());
 
-const pythonToExcelProcess = spawn('python', ['toexel.py']);
-
 let toExcelResponse = '';
-
-app.post('/upload', upload.single('pdfFile'), function (req, res) {
+let type = {};
+app.post('/upload/:id', upload.single('pdfFile'), function (req, res) {
+  type = { type: req.params.id };
+  pythonToExcelProcess = spawn('python', ['toexel.py']);
   res.send({ data: true });
 });
 app.get('/convert', function (request, response) {
@@ -38,24 +38,28 @@ app.get('/convert', function (request, response) {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   );
 
-  pythonToExcelProcess.stdin.write('prueba fichero');
-  pythonToExcelProcess.stdout.on('data', (data) => {
+  pythonToExcelProcess.stdout.on('data', function (data) {
+    console.log(data, 'data');
     toExcelResponse += data.toString();
-    console.log(toExelResponse);
+  });
+  console.log(type);
+  pythonToExcelProcess.stdin.write(type.type);
+
+  pythonToExcelProcess.stdout.on('end', function () {
+    response.download(
+      './Plantillas modelos impuestos UHY.xlsx',
+      'Plantillas modelos impuestos UHY.xlsx',
+
+      (err) => {
+        if (err) console.log(err);
+      }
+    );
+    type = {};
   });
 
-  pythonToExcelProcess.on('end', () => console.log(toExcelResponse));
-
   pythonToExcelProcess.stdin.end();
-  // console.log('se hizo algo 2');
-  response.download(
-    './Plantillas modelos impuestos UHY.xlsx',
-    'Plantillas modelos impuestos UHY.xlsx',
 
-    (err) => {
-      if (err) console.log(err);
-    }
-  );
+  console.log(toExcelResponse);
 });
 
 app.listen(port, () => {
