@@ -7,20 +7,24 @@ import pdfplumber
 from collections import namedtuple
 import openpyxl
 import sys
+import json 
 
-
-
+ 
 
 excel = openpyxl.load_workbook(filename = './Plantillas modelos impuestos UHY.xlsx')
 
 
 
-modelForm = sys.stdin.readline()
-print(modelForm)
-print(sys.stdin.readline())
+
+# nameOfTheFile =s
+# nameOfTheFile =  data['name']
+
+# print(modelForm)
+# print(nameOfTheFile)
 
 
-file = './uploads/pdfToRead.pdf'
+
+
 monthRegex = re.compile(r"(0?[1-9]|[1][0-2])$")
 month = ''
 lines = []
@@ -30,7 +34,7 @@ bases = 0
 
 
 
-def model111IRPF():
+def model111IRPF(file):
 
    sheet1 = excel['IRPF 111']
    monthRegex = re.compile(r"(0?[1-9]|[1][0-2])$")
@@ -96,7 +100,7 @@ def model111IRPF():
    
 
 
-def model303Iva():
+def model303Iva(file):
    sheet1 = excel['IVA']
    with pdfplumber.open(file) as pdf:
     pages = pdf.pages
@@ -221,24 +225,31 @@ def model303Iva():
             elif((line.find('66') != -1 ) & (line.find('65') != -1 ) ):
                 items = line.split()
                 print(items)               
-                sheet1.cell(column= month,row=57, value = items[9])           
+                sheet1.cell(column= month,row=57, value = float(items[9].replace(".","").replace(",",".")))           
         
             #excel.save('Plantillas modelos impuestos UHY.xlsx')
 
 
 
 def getDataFromPdfAndSaveExcel():
-   print(modelForm)
-   if(modelForm == "303"):
-      print('pasa 303')
-      model303Iva()
-      excel.save('Plantillas modelos impuestos UHY.xlsx')
-   elif(modelForm == "111"):
-      print('pasa 111')
-      model111IRPF()
-      excel.save('Plantillas modelos impuestos UHY.xlsx')
+    data = json.loads(sys.stdin.readline())
+    print(data)
+    sys.stdout.flush()
+    modelForm = data['type']   
+    for name in data['names']:
+        print(name)
+        file = './uploads/'+ name
+        if(modelForm == "303"):
+           print('pasa 303')
+           model303Iva(file)
+           excel.save('Plantillas modelos impuestos UHY.xlsx')
+         
+        elif(modelForm == "111"):
+           print('pasa 111')
+           model111IRPF(file)
+           excel.save('Plantillas modelos impuestos UHY.xlsx')
+           
 
 getDataFromPdfAndSaveExcel()
-sys.stdout.flush()
 
 
