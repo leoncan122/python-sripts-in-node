@@ -47,15 +47,11 @@ app.get('/convert', function (request, response) {
   pythonToExcelProcess.stdin.write(JSON.stringify(dataOfFile));
   pythonToExcelProcess.stdin.end();
   pythonToExcelProcess.stdout.on('end', function () {
-    console.log('end');
+    response.send({ coverted: true });
   });
-
-  response.send({ coverted: true });
-
-  console.log(toExcelResponse);
 });
 
-app.get('/download', function (res, res) {
+app.get('/download', function (request, response) {
   response.setHeader(
     'Content-Disposition',
     "attachment; filename='Plantillas modelos impuestos UHY.xlsx'; filename*=UTF-8''Plantillas modelos impuestos UHY.xlsx"
