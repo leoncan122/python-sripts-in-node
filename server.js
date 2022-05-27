@@ -14,40 +14,44 @@ const storage = multer.diskStorage({
     cb(null, 'uploads');
   },
   filename: function (req, file, cb) {
-    let name = `pdfToRead.pdf${Date.now()}${path.extname(
-      file.originalname
-    )}.pdf`;
+    let name = `${file.originalname}`;
     nameOfFiles.push(name);
     cb(null, name);
   },
 });
 
 const upload = multer({ storage: storage });
-const uploadMultiple = upload.fields([{ name: 'file-6', maxCount: 10 }]);
+const uploadMultiple = upload.fields([{ name: 'file-6', maxCount: 15 }]);
 
 app.use(cors({ exposedHeaders: '*' }));
 app.use(express.json());
 
 let toExcelResponse = '';
 let type = {};
-app.post('/upload/:id', uploadMultiple, function (req, res) {
-  console.log(req.files);
+app.post('/upload/:id', uploadMultiple, (req, res) => {
+  // console.log(req.files);
   type = req.params.id;
-
+  const dataOfFile = { type, names: nameOfFiles };
+  // console.log(JSON.stringify(dataOfFile));
   res.send({ data: true });
 });
-app.get('/convert', function (request, response) {
+app.get('/convert', (request, response) => {
   pythonToExcelProcess = spawn('python', ['toexel.py']);
-  pythonToExcelProcess.stdout.on('data', function (data) {
-    console.log(data, 'data');
-    toExcelResponse += data.toString();
-  });
+
   const dataOfFile = { type, names: nameOfFiles };
-  console.log(JSON.stringify(dataOfFile));
+  pythonToExcelProcess.stdout.on('data', (data) => {
+    toExcelResponse += data.toString();
+    console.log(toExcelResponse, 'data');
+  });
   pythonToExcelProcess.stdin.write(JSON.stringify(dataOfFile));
+  console.log(JSON.stringify(dataOfFile));
+  pythonToExcelProcess.on('close', (code) => {
+    console.log('code', code);
+  });
   pythonToExcelProcess.stdin.end();
   pythonToExcelProcess.stdout.on('end', function () {
     response.send({ coverted: true });
+    nameOfFiles = [];
   });
 });
 

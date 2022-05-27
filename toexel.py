@@ -26,7 +26,7 @@ excel = openpyxl.load_workbook(filename = './Plantillas modelos impuestos UHY.xl
 
 
 monthRegex = re.compile(r"(0?[1-9]|[1][0-2])$")
-month = ''
+# month = ''
 lines = []
 total_check = 0
 cuotas = 0
@@ -48,8 +48,8 @@ def model111IRPF(file):
                if(line.find('Período') != -1):
                    month = int(monthRegex.search(line).group(1)) + 3
                    items = line.split()
-                   print(month)
-                   print(items)
+                #    print(month, ' ----------------------')
+                #    print(items)
 
 
                elif((line.startswith('Rendimientos dinerarios')) & (line.find('01')  != -1)): 
@@ -67,7 +67,7 @@ def model111IRPF(file):
 
                elif((line.startswith('Rendimientos dinerarios')) & (line.find('07')  != -1)): 
                    items = line.split()
-                   print(items)
+                #    print(items)
                    perceptores = float(items[4].replace(".","").replace(",","."))
                    percepciones = float(items[6].replace(".","").replace(",","."))
                    retenciones = float(items[8].replace(".","").replace(",","."))
@@ -96,39 +96,46 @@ def model111IRPF(file):
                    #TODO
                    items = line.split()
                
-              
+               #excel.save('Plantillas modelos impuestos UHY.xlsx') 
    
 
 
 def model303Iva(file):
+   month = ''
    sheet1 = excel['IVA']
    with pdfplumber.open(file) as pdf:
     pages = pdf.pages
     for page in pdf.pages:
         text = page.extract_text()
-        for line in text.split('\n'):            
-            if(line.find('Ejercicio ') != -1):
-                month = int(monthRegex.search(line).group(1)) + 4
+        for line in text.split('\n'):
+            
+            if(line.find('Período ') != -1):
                 
-                #print(month) 
+                month = int(monthRegex.search(line).group(1)) + 4
+                # print(month)
+                
+         
                 
             ## TODO ELFI TIPO 4 %    
             # 10%
-            elif((line.startswith('Régimen general')) & (line.find('04')  != -1)): 
+            elif((line.startswith('Régimen general')) & (line.find('04')  != -1)):
+                         
                 items = line.split()
-                #print(items)
-                bases = float(items[4].replace(".","").replace(",","."))
-                cuotas = float(items[8].replace(".","").replace(",",".")) 
-                sheet1.cell(column= month,row=8, value = bases)
-                sheet1.cell(column= month,row=20, value = cuotas)
-               #  lines.append(tipo10PorCiento(items[4]))
+                    
+                if(len(items) > 7): 
+                    # #print(items)
+                    bases = float(items[4].replace(".","").replace(",","."))
+                    cuotas = float(items[8].replace(".","").replace(",",".")) 
+                    sheet1.cell(column= month,row=8, value = bases)
+                    sheet1.cell(column= month,row=20, value = cuotas)
+               #      lines.append(tipo10PorCiento(items[4]))
                    
-                items = line.split()
+               # items = line.split()
              # 21%   
             elif(line.startswith('07')  ):
-              
+                
                 items = line.split()
-                #print(items)
+                
                 bases = float(items[1].replace(".","").replace(",","."))               
                 cuotas = float( items[5].replace(".","").replace(",","."))
                 sheet1.cell(column= month,row=9, value = bases)
@@ -137,7 +144,7 @@ def model303Iva(file):
             # Adquisiciones intracomunitarias de bienes y servicios.
             elif(line.startswith('Adquisiciones intracomunitarias de bienes y servicios.')  ):
                 items = line.split()
-                #print(items)
+                # #print(items)
                 bases = float(items[8].replace(".","").replace(",","."))  
                 cuotas = float( items[10].replace(".","").replace(",","."))
                 sheet1.cell(column= month,row=22, value = cuotas)
@@ -146,18 +153,21 @@ def model303Iva(file):
             # TODO ELIF Otras operaciones con inversión del sujeto pasivo'
             elif(line.startswith('Otras operaciones con inversión del sujeto pasivo')  ):
                 items = line.split()
-                # print(items)
+                # # print(items)
                 #    value = items[10]
                 #  sheet1.cell(column= month,row=11, value = value)  
             
             # Modificación bases y cuotas
             elif((line.find('bases y cuotas') != -1 ) & (line.find('14') != -1  )):
                items = line.split()
-               #print(items)
-               cuotas = float( items[9].replace(".","").replace(",","."))               
-               bases = float(items[7].replace(".","").replace(",","."))               
-               sheet1.cell(column= month,row=12, value = bases)
-               sheet1.cell(column= month,row=24, value = cuotas)
+            #    print(len(items) > 8)
+              
+            #    print((items) )
+               if((len(items) > 7) == True ): 
+                    cuotas = float( items[len(items)-1].replace(".","").replace(",","."))               
+                    bases = float(items[7].replace(".","").replace(",","."))               
+                    sheet1.cell(column= month,row=12, value = bases)
+                    sheet1.cell(column= month,row=24, value = cuotas)
                 
               # TODO ELIF Recargo equivalencia
               # TODO Modifi caciones bases y cuotas del recargo de equivalencia 
@@ -171,7 +181,7 @@ def model303Iva(file):
             elif(line.startswith('Por cuotas soportadas en operaciones interiores con bienes de inversión')):
                items = line.split()
               
-               cuotas = float( items[14].replace(".","").replace(",","."))
+               cuotas = float( items[len(items)-1].replace(".","").replace(",","."))
                bases = float(items[12].replace(".","").replace(",","."))
                sheet1.cell(column= month,row=32, value = bases)
                sheet1.cell(column= month,row=42, value = cuotas)      
@@ -181,7 +191,7 @@ def model303Iva(file):
             
             elif(line.startswith('En adquisiciones intracomunitarias de bienes y servicios corrientes')):
                items = line.split()
-               # print(items)
+            #    # print(items)
                cuotas = float( items[12].replace(".","").replace(",","."))
                bases = float(items[10].replace(".","").replace(",","."))
                sheet1.cell(column= month,row=35, value = bases)
@@ -189,10 +199,12 @@ def model303Iva(file):
                 
                # TODO En adquisiciones intracomunitarias de bienes de inversión 
             
-            elif((line.find('40') != -1 ) & (line.find('41') != -1  )):
-               items = line.split()               
-               cuotas = float(items[8].replace(".","").replace(",","."))
+            elif((line.startswith('Rectificación de deducciones')) & (line.find('40') != -1 ) & (line.find('41') != -1  )):
+               items = line.split() 
+            #    print(items, "-------------------")              
+               cuotas = float(items[len(items)-1].replace(".","").replace(",","."))
                bases = float(items[6].replace(".","").replace(",","."))
+               
                sheet1.cell(column= month,row=37, value = bases)
                sheet1.cell(column= month,row=47, value = cuotas)   
             
@@ -204,12 +216,12 @@ def model303Iva(file):
             
             elif(line.startswith('Exportaciones y operaciones asimiladas')):
                items = line.split()                        
-               sheet1.cell(column= month,row=61, value = float(items[6].replace(".","").replace(",",".")))
+               sheet1.cell(column= month,row=61, value = float(items[len(items)-1].replace(".","").replace(",",".")))
            
             elif((line.find('61') != -1 ) & (line.find('Operaciones') != -1 ) ):
                items = line.split()
-               print(items)               
-               sheet1.cell(column= month,row=62, value = float(items[17].replace(".","").replace(",",".")))
+            #    print(items)               
+               sheet1.cell(column= month,row=62, value = float(items[len(items)-1].replace(".","").replace(",",".")))
            
             
             #TODO ELIF Importes de las entregas de bienes y prestaciones de servicios...
@@ -222,32 +234,37 @@ def model303Iva(file):
            #TODO ELIF Suma de resultados ( [46] + [58] + [76] ) 
         
            #TODO ELIF Atribuible a la Administración del Estado ( [46] + [58] + [76] )
-            elif((line.find('66') != -1 ) & (line.find('65') != -1 ) ):
+            elif(line.startswith('Atribuible') & (line.find('66') != -1 ) & (line.find('65') != -1 ) ):
+                # print(month, "ACA ESTA EL MONTH _______________")
                 items = line.split()
-                print(items)               
-                sheet1.cell(column= month,row=57, value = float(items[9].replace(".","").replace(",",".")))           
+                # print(items)               
+                sheet1.cell(column= month,row=57, value = float(items[len(items)-1].replace(".","").replace(",",".")))           
         
-            #excel.save('Plantillas modelos impuestos UHY.xlsx')
+            # excel.save('Plantillas modelos impuestos UHY.xlsx')
 
 
 
 def getDataFromPdfAndSaveExcel():
-    data = json.loads(sys.stdin.readline())
-    print(data)
+    data = json.loads(sys.stdin.readline())    
     sys.stdout.flush()
     modelForm = data['type']   
     for name in data['names']:
         print(name)
-        file = './uploads/'+ name
+        file = './uploads/' + name
         if(modelForm == "303"):
            print('pasa 303')
            model303Iva(file)
-           excel.save('Plantillas modelos impuestos UHY.xlsx')
-         
+           
+           
+
         elif(modelForm == "111"):
            print('pasa 111')
            model111IRPF(file)
-           excel.save('Plantillas modelos impuestos UHY.xlsx')
+           
+    excel.save('Plantillas modelos impuestos UHY.xlsx')       
+    sys.stdout.close()
+    
+    #excel.save('Plantillas modelos impuestos UHY.xlsx')
            
 
 getDataFromPdfAndSaveExcel()
