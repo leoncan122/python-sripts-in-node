@@ -11,22 +11,23 @@ const port = process.env.PORT || 3000;
 let pythonToExcelProcess;
 
 let nameOfFiles = [];
+let filesToDelete = [];
 let toExcelResponse = '';
 let type = {};
 let nameOfExcel = 'Plantillas modelos impuestos UHY.xlsx';
 
-const excels = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'excels');
-  },
-  filename: function (req, file, cb) {
-    let name = `${file.originalname}`;
-    nameOfExcel = name;
+// const excels = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, 'excels');
+//   },
+//   filename: function (req, file, cb) {
+//     let name = `${file.originalname}`;
+//     nameOfExcel = name;
 
-    console.log(nameOfFiles);
-    cb(null, name);
-  },
-});
+//     console.log(nameOfFiles);
+//     cb(null, name);
+//   },
+// });
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -34,17 +35,17 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     let name = `${file.originalname}`;
+
     nameOfFiles.indexOf(name) === -1 ? nameOfFiles.push(name) : null;
 
-    console.log(nameOfFiles);
     cb(null, name);
   },
 });
 
 const upload = multer({ storage: storage });
-const uploadExcel = multer({ storage: excels });
 const uploadMultiple = upload.fields([{ name: 'file-6', maxCount: 15 }]);
-const uploadMExcel = uploadExcel.fields([{ name: 'excelFile', maxCount: 1 }]);
+// const uploadExcel = multer({ storage: excels });
+// const uploadMExcel = uploadExcel.fields([{ name: 'excelFile', maxCount: 1 }]);
 
 app.use(cors({ exposedHeaders: '*' }));
 app.use(express.json());
@@ -60,41 +61,43 @@ app.post('/upload/:type/', uploadMultiple, (req, res) => {
   }
   // console.log(req.files);
 });
-app.post('/upload/:type/:excelName', uploadMultiple, (req, res) => {
-  try {
-    type = req.params.type;
-    if (req.params.excelName) {
-      nameOfExcel = req.params.excelName;
-    }
-    console.log(nameOfExcel);
-    const dataOfFile = { type, names: nameOfFiles };
-    console.log(JSON.stringify(dataOfFile));
-    res.send({ data: true });
-  } catch (error) {
-    console.log(error);
-  }
-  // console.log(req.files);
-});
+// app.post('/upload/:type/:excelName', uploadMultiple, (req, res) => {
+//   try {
+//     type = req.params.type;
+//     if (req.params.excelName) {
+//       nameOfExcel = req.params.excelName;
+//     }
+//     console.log(nameOfExcel);
+//     const dataOfFile = { type, names: nameOfFiles };
+//     console.log(JSON.stringify(dataOfFile));
+//     res.send({ data: true });
+//   } catch (error) {
+//     console.log(error);
+//   }
+//   // console.log(req.files);
+// });
 
-app.post('/uploadExcel', uploadMExcel, (req, res) => {
-  console.log('hola');
-  try {
-    type = req.params.id;
-    const dataOfFile = { type, names: nameOfFiles };
-    console.log(JSON.stringify(dataOfFile));
-    res.send({ data: true });
-  } catch (error) {
-    console.log(error);
-  }
-  // console.log(req.files);
-});
+// app.post('/uploadExcel', uploadMExcel, (req, res) => {
+//   console.log('hola');
+//   try {
+//     type = req.params.id;
+//     const dataOfFile = { type, names: nameOfFiles };
+//     console.log(JSON.stringify(dataOfFile));
+//     res.send({ data: true });
+//   } catch (error) {
+//     console.log(error);
+//   }
+//   // console.log(req.files);
+// });
+
 app.get('/convert', (request, response) => {
   pythonToExcelProcess = spawn('python', ['toexel.py']);
   console.log('comenzo a convertir');
   let dataOfFile = { type, names: nameOfFiles };
-  if (nameOfExcel !== 'Plantillas modelos impuestos UHY.xlsx') {
-    dataOfFile = { ...dataOfFile, excelName: nameOfExcel };
-  } else {
+
+  if (!fs.existsSync('./excels/Plantillas modelos impuestos UHY.xlsx')) {
+    // dataOfFiles = { ...dataOfFile, excelName: nameOfExcel };
+
     fs.copyFile(
       './Plantillas modelos impuestos UHY.xlsx',
       './excels/Plantillas modelos impuestos UHY.xlsx',
@@ -113,8 +116,12 @@ app.get('/convert', (request, response) => {
   console.log(JSON.stringify(dataOfFile));
   pythonToExcelProcess.on('close', (code) => {
     console.log('code', code);
-    dataOfFile = {};
+    filesToDelete = nameOfFiles;
+    nameOfFiles = [];
+    console.log(filesToDelete);
+    deleteFiles(filesToDelete);
   });
+
   pythonToExcelProcess.stdin.end();
   pythonToExcelProcess.stdout.on('end', function () {
     response.send({ coverted: true });
@@ -143,7 +150,6 @@ app.get('/download', function (request, response) {
 app.delete('/delete', (request, response) => {
   console.log('hola');
   try {
-    deleteFiles(nameOfFiles);
     deleteExcel(nameOfExcel);
     nameOfFiles = [];
   } catch (error) {

@@ -538,12 +538,12 @@ def getDataFromPdfAndSaveExcel():
     data = json.loads(sys.stdin.readline())    
     sys.stdout.flush()
     modelForm = data['type']
-    if('excelName' in data):
-        exceFilelName = './excels/' + data['excelName']
-        # excel = openpyxl.load_workbook(filename = excelFileName)
-        print(data['excelName'])
-    else:
-       exceFilelName = './excels/Plantillas modelos impuestos UHY.xlsx' 
+    # if('excelName' in data):
+    #     exceFilelName = './excels/' + data['excelName']
+    #     # excel = openpyxl.load_workbook(filename = excelFileName)
+    #     print(data['excelName'])
+    # else:
+    exceFilelName = './excels/Plantillas modelos impuestos UHY.xlsx' 
     excel = openpyxl.load_workbook(filename = exceFilelName)   
     for name in data['names']:
         print(name)
