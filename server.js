@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const spawn = require('child_process').spawn;
+require('dotenv').config();
 
 const port = process.env.PORT || 3000;
 let pythonToExcelProcess;
