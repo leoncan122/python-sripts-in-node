@@ -51,6 +51,7 @@ app.get('/convert', (request, response) => {
   console.log(JSON.stringify(dataOfFile));
   pythonToExcelProcess.on('close', (code) => {
     console.log('code', code);
+    nameOfFiles = [];
   });
   pythonToExcelProcess.stdin.end();
   pythonToExcelProcess.stdout.on('end', function () {

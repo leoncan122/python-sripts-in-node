@@ -26,13 +26,16 @@ excel = openpyxl.load_workbook(filename = './Plantillas modelos impuestos UHY.xl
 
 
 monthRegex = re.compile(r"(0?[1-9]|[1][0-2])$")
+
+valuesRegex =re.compile(r"[0-9]*\.[0-9]+")
+
 # month = ''
 lines = []
 total_check = 0
 cuotas = 0
 bases = 0
 
-
+pattern = re.compile(r"([+-]?(?=\\.\\d|\\d)(?:\\d+)?(?:\\.?\\d*))(?:[eE]([+-]?\\d+))?,([+-]?(?=\\.\\d|\\d)(?:\\d+)?(?:\\.?\\d*))(?:[eE]([+-]?\\d+))?", re.IGNORECASE)
 
 def model111IRPF(file):
 
@@ -54,7 +57,6 @@ def model111IRPF(file):
 
                elif((line.startswith('Rendimientos dinerarios')) & (line.find('01')  != -1)): 
                    items = line.split()
-
                    perceptores = float(items[4].replace(".","").replace(",","."))
                    percepciones = float(items[6].replace(".","").replace(",","."))
                    retenciones = float(items[8].replace(".","").replace(",","."))
@@ -75,6 +77,7 @@ def model111IRPF(file):
                    sheet1.cell(column= month,row=21, value = percepciones)
                    sheet1.cell(column= month,row=22, value = retenciones)
                elif((line.startswith('Rendimientos en especie')) & (line.find('10')  != -1)):
+                   print(line)
                    #TODO
                    items = line.split()
                elif((line.startswith('Premios en metálico')) & (line.find('13')  != -1)):
@@ -116,129 +119,316 @@ def model303Iva(file):
                 
          
                 
-            ## TODO ELFI TIPO 4 %    
+            # TIPO 4 %  
+            elif((line.find('02') != -1) &( line.find('01') != -1)):
+                
+                lineEdited = line.replace(".","").replace(",",".")
+                # print(lineEdited)
+
+                matches = valuesRegex.findall(lineEdited)   
+                if(len(matches) > 1 ):                  
+                   bases = float(matches[0])
+                   cuotas = float(matches[2]) 
+                   sheet1.cell(column= month,row=7, value = bases)
+                   sheet1.cell(column= month,row=19, value = cuotas)
+              
             # 10%
             elif((line.startswith('Régimen general')) & (line.find('04')  != -1)):
-                         
-                items = line.split()
                     
-                if(len(items) > 7): 
-                    # #print(items)
-                    bases = float(items[4].replace(".","").replace(",","."))
-                    cuotas = float(items[8].replace(".","").replace(",",".")) 
+                lineEdited = line.replace(".","").replace(",",".")
+                # print(lineEdited)
+                matches = valuesRegex.findall(lineEdited)   
+                if(len(matches) > 1 ):                 
+                    bases = float(matches[0])
+                    cuotas = float(matches[2]) 
                     sheet1.cell(column= month,row=8, value = bases)
                     sheet1.cell(column= month,row=20, value = cuotas)
-               #      lines.append(tipo10PorCiento(items[4]))
-                   
-               # items = line.split()
+               
              # 21%   
             elif(line.startswith('07')  ):
-                
-                items = line.split()
-                
-                bases = float(items[1].replace(".","").replace(",","."))               
-                cuotas = float( items[5].replace(".","").replace(",","."))
-                sheet1.cell(column= month,row=9, value = bases)
-                sheet1.cell(column= month,row=21, value = cuotas)
+                lineEdited = line.replace(".","").replace(",",".")
+                # print(lineEdited)
+
+                matches = valuesRegex.findall(lineEdited)
+                # print(matches[0])  
+                # items = line.split()
+                if(len(matches) > 1 ):   
+                    bases = float(matches[0])               
+                    cuotas = float(matches[2])
+                    sheet1.cell(column= month,row=9, value = bases)
+                    sheet1.cell(column= month,row=21, value = cuotas)
                 
             # Adquisiciones intracomunitarias de bienes y servicios.
             elif(line.startswith('Adquisiciones intracomunitarias de bienes y servicios.')  ):
-                items = line.split()
-                # #print(items)
-                bases = float(items[8].replace(".","").replace(",","."))  
-                cuotas = float( items[10].replace(".","").replace(",","."))
-                sheet1.cell(column= month,row=22, value = cuotas)
-                sheet1.cell(column= month,row=10, value = bases)
+                lineEdited = line.replace(".","").replace(",",".")
+                matches = valuesRegex.findall(lineEdited)
+                # print(matches) 
+                if(len(matches) >= 1 ):                  
+                    bases = float(matches[0])  
+                    cuotas = float( matches[1])
+                    sheet1.cell(column= month,row=22, value = cuotas)
+                    sheet1.cell(column= month,row=10, value = bases)
                 
-            # TODO ELIF Otras operaciones con inversión del sujeto pasivo'
+            #  ELIF Otras operaciones con inversión del sujeto pasivo'
             elif(line.startswith('Otras operaciones con inversión del sujeto pasivo')  ):
-                items = line.split()
-                # # print(items)
-                #    value = items[10]
-                #  sheet1.cell(column= month,row=11, value = value)  
+                lineEdited = line.replace(".","").replace(",",".")
+                matches = valuesRegex.findall(lineEdited)
+                # print(matches)     
+                if(len(matches) >= 1 ):              
+                    bases = float(matches[0])  
+                    cuotas = float( matches[1])
+                    sheet1.cell(column= month,row=23, value = cuotas)
+                    sheet1.cell(column= month,row=11, value = bases)  
             
             # Modificación bases y cuotas
             elif((line.find('bases y cuotas') != -1 ) & (line.find('14') != -1  )):
-               items = line.split()
-            #    print(len(items) > 8)
-              
-            #    print((items) )
-               if((len(items) > 7) == True ): 
-                    cuotas = float( items[len(items)-1].replace(".","").replace(",","."))               
-                    bases = float(items[7].replace(".","").replace(",","."))               
+             
+               lineEdited = line.replace(".","").replace(",",".")
+               matches = valuesRegex.findall(lineEdited)             
+            
+               if(len(matches) >= 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])               
                     sheet1.cell(column= month,row=12, value = bases)
                     sheet1.cell(column= month,row=24, value = cuotas)
                 
-              # TODO ELIF Recargo equivalencia
-              # TODO Modifi caciones bases y cuotas del recargo de equivalencia 
-            elif(line.startswith('Por cuotas soportadas en operaciones interiores corrientes')):
-               items = line.split()
-               
-               cuotas = float( items[11].replace(".","").replace(",","."))
-               bases = float(items[9].replace(".","").replace(",","."))      
-               sheet1.cell(column= month,row=31, value = bases)
-               sheet1.cell(column= month,row=41, value = cuotas)
-            elif(line.startswith('Por cuotas soportadas en operaciones interiores con bienes de inversión')):
-               items = line.split()
-              
-               cuotas = float( items[len(items)-1].replace(".","").replace(",","."))
-               bases = float(items[12].replace(".","").replace(",","."))
-               sheet1.cell(column= month,row=32, value = bases)
-               sheet1.cell(column= month,row=42, value = cuotas)      
-             
-            # TODO ELIF Por cuotas soportadas en las importaciones de bienes corrientes
-            # TODO Por cuotas soportadas en las importaciones de bienes de inversión
-            
-            elif(line.startswith('En adquisiciones intracomunitarias de bienes y servicios corrientes')):
-               items = line.split()
-            #    # print(items)
-               cuotas = float( items[12].replace(".","").replace(",","."))
-               bases = float(items[10].replace(".","").replace(",","."))
-               sheet1.cell(column= month,row=35, value = bases)
-               sheet1.cell(column= month,row=45, value = cuotas)
+                #  ELIF Recargo equivalencia
+            elif((line.find('16') != -1 ) & (line.find('17') != -1 ) & (line.find('18') != -1) ):
                 
-               # TODO En adquisiciones intracomunitarias de bienes de inversión 
-            
-            elif((line.startswith('Rectificación de deducciones')) & (line.find('40') != -1 ) & (line.find('41') != -1  )):
-               items = line.split() 
-            #    print(items, "-------------------")              
-               cuotas = float(items[len(items)-1].replace(".","").replace(",","."))
-               bases = float(items[6].replace(".","").replace(",","."))
+               lineEdited = line.replace(".","").replace(",",".")
+               matches = valuesRegex.findall(lineEdited)             
+               print(matches)
+               if(len(matches) > 1 ):   
+                    cuotas = float(matches[2])               
+                    bases = float(matches[0])               
+                    sheet1.cell(column= month,row=13, value = bases)
+                    sheet1.cell(column= month,row=25, value = cuotas)    
+            elif((line.find('19') != -1 ) & (line.find('20') != -1 ) & (line.find('21') != -1) ):
+                
+               lineEdited = line.replace(".","").replace(",",".")
+               matches = valuesRegex.findall(lineEdited)             
+               print(matches)
+               if(len(matches) > 1 ):   
+                    cuotas = float(matches[2])               
+                    bases = float(matches[0])               
+                    sheet1.cell(column= month,row=14, value = bases)
+                    sheet1.cell(column= month,row=26, value = cuotas)    
+            elif((line.find('22') != -1 ) & (line.find('23') != -1 ) & (line.find('24') != -1) ):
+                
+               lineEdited = line.replace(".","").replace(",",".")
+               matches = valuesRegex.findall(lineEdited)             
+               print(matches)
+               if(len(matches) > 1 ):   
+                    cuotas = float(matches[2])               
+                    bases = float(matches[0])               
+                    sheet1.cell(column= month,row=15, value = bases)
+                    sheet1.cell(column= month,row=27, value = cuotas)    
+            elif((line.find('25') != -1 ) & (line.find('26') != -1 )):
+                
+               lineEdited = line.replace(".","").replace(",",".")
+               matches = valuesRegex.findall(lineEdited)             
+               print(matches)
+               if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0]) 
+                    #No hay casillas en el excel (?)              
+                    # sheet1.cell(column= month,row=15, value = bases)
+                    # sheet1.cell(column= month,row=27, value = cuotas)    
+
+              #  Modifi caciones bases y cuotas del recargo de equivalencia 
+            elif((line.find('28') != -1 ) & (line.find('29') != -1 )):
+               lineEdited = line.replace(".","").replace(",",".")
+               matches = valuesRegex.findall(lineEdited)             
                
-               sheet1.cell(column= month,row=37, value = bases)
-               sheet1.cell(column= month,row=47, value = cuotas)   
+               if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])     
+                    sheet1.cell(column= month,row=31, value = bases)
+                    sheet1.cell(column= month,row=41, value = cuotas)
+            elif((line.find('30') != -1 ) & (line.find('31') != -1 )):
+               lineEdited = line.replace(".","").replace(",",".")
+               matches = valuesRegex.findall(lineEdited)             
+               
+               if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])  
+                    sheet1.cell(column= month,row=32, value = bases)
+                    sheet1.cell(column= month,row=42, value = cuotas)      
+            #ELIF Por cuotas soportadas en las importaciones de bienes corrientes
+            elif((line.find('32') != -1 ) & (line.find('33') != -1 )):
+               lineEdited = line.replace(".","").replace(",",".")
+               matches = valuesRegex.findall(lineEdited)             
+               
+               if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])  
+                    sheet1.cell(column= month,row=33, value = bases)
+                    sheet1.cell(column= month,row=43, value = cuotas)      
+             
+            #  Por cuotas soportadas en las importaciones de bienes de inversión
+            elif((line.find('34') != -1 ) & (line.find('35') != -1 )):
+               lineEdited = line.replace(".","").replace(",",".")
+               matches = valuesRegex.findall(lineEdited)             
+               
+               if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])  
+                    sheet1.cell(column= month,row=34, value = bases)
+                    sheet1.cell(column= month,row=44, value = cuotas)    
+            elif((line.find('36') != -1 ) & (line.find('37') != -1 )):
+                lineEdited = line.replace(".","").replace(",",".")
+                matches = valuesRegex.findall(lineEdited)             
+               
+                if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])  
+                    sheet1.cell(column= month,row=35, value = bases)
+                    sheet1.cell(column= month,row=45, value = cuotas)
+                
+            #  En adquisiciones intracomunitarias de bienes de inversión 
+            elif((line.find('38') != -1 ) & (line.find('39') != -1 )):
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])  
+                    sheet1.cell(column= month,row=36, value = bases)
+                    sheet1.cell(column= month,row=46, value = cuotas)
+            elif((line.find('40') != -1 ) & (line.find('41') != -1 )):           
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])                 
+                    sheet1.cell(column= month,row=37, value = bases)
+                    sheet1.cell(column= month,row=47, value = cuotas)   
             
          
-            #TODO ELIF Compensaciones Régimen Especial A.G. y P.
-            #TODO ELIF Regularización bienes de inversión
-            #TODO ELIF Regularización por aplicación del porcentaje definitivo de prorrata
-            #TODO ELIF Entregas intracomunitarias de bienes y servicios
+            # ELIF Compensaciones Régimen Especial A.G. y P.
+            elif((line.startswith('Compensaciones Régimen')) & (line.find('42') != -1 )):           
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 0 ):   
+                    cuota = float(matches[0])      
+                    sheet1.cell(column= month,row=48, value = cuota)   
+
+            # ELIF Regularización bienes de inversión
+            elif((line.startswith('Regularización bienes de inversión')) & (line.find('43') != -1 )):           
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 0 ):   
+                    cuota = float(matches[0])      
+                    sheet1.cell(column= month,row=49, value = cuota)  
+            # ELIF Regularización por aplicación del porcentaje definitivo de prorrata
+            elif((line.startswith('Regularización por aplicación')) & (line.find('44') != -1 )):           
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 0 ):   
+                    cuota = float(matches[0])      
+                    sheet1.cell(column= month,row=50, value = cuota) 
+            # ELIF Entregas intracomunitarias de bienes y servicios
             
-            elif(line.startswith('Exportaciones y operaciones asimiladas')):
-               items = line.split()                        
-               sheet1.cell(column= month,row=61, value = float(items[len(items)-1].replace(".","").replace(",",".")))
+
+            elif((line.startswith('Entregas intracomunitarias de bienes y servicios')) & (line.find('59') != -1 )):           
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 0 ):   
+                    cuota = float(matches[0])      
+                    sheet1.cell(column= month,row=60, value = cuota)  
+            
+            elif((line.startswith('Exportaciones y operaciones asimiladas')) & (line.find('60') != -1 )):
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 0 ):   
+                    cuota = float(matches[0])                      
+                    sheet1.cell(column= month,row=61, value = cuota)
            
             elif((line.find('61') != -1 ) & (line.find('Operaciones') != -1 ) ):
-               items = line.split()
-            #    print(items)               
-               sheet1.cell(column= month,row=62, value = float(items[len(items)-1].replace(".","").replace(",",".")))
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 0 ):   
+                    cuota = float(matches[0])               
+                    sheet1.cell(column= month,row=62, value = cuota)
            
             
-            #TODO ELIF Importes de las entregas de bienes y prestaciones de servicios...
-            #TODO ELIF Importes de las adquisiciones de bienes y servicios a las que sea de aplicación
+            # ELIF Importes de las entregas de bienes y prestaciones de servicios...
+            elif((line.find('62') != -1 ) & (line.find('63') != -1 )):           
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])
+                    #casilla de excel no informada (?)                 
+                    # sheet1.cell(column= month,row=37, value = bases)
+                    # sheet1.cell(column= month,row=47, value = cuotas)  
+            # ELIF Importes de las adquisiciones de bienes y servicios a las que sea de aplicación
+            elif((line.find('73') != -1 ) & (line.find('75') != -1 )):           
+              lineEdited = line.replace(".","").replace(",",".")
+              matches = valuesRegex.findall(lineEdited)             
+               
+              if(len(matches) > 1 ):   
+                    cuotas = float(matches[1])               
+                    bases = float(matches[0])
+                    #casilla de excel no informada (?)                 
+                    # sheet1.cell(column= month,row=37, value = bases)
+                    # sheet1.cell(column= month,row=47, value = cuotas)  
             
             
            # RESULTADO
         
-           #TODO ELIF Regularización cuotas art. 80.Cinco.5ª LIVA  
-           #TODO ELIF Suma de resultados ( [46] + [58] + [76] ) 
+           # ELIF Regularización cuotas art. 80.Cinco.5ª LIVA
+            elif((line.startswith('Regularización cuotas')) & (line.find('76') != -1 )):
+             lineEdited = line.replace(".","").replace(",",".")
+             matches = valuesRegex.findall(lineEdited)             
+               
+             if(len(matches) > 0 ):   
+                cuota = float(matches[0])
+                    #casilla de excel no informada (?)                        
+                    #sheet1.cell(column= month,row=61, value = cuota)  
+           #TODO ELIF Suma de resultados ( [46] + [58] + [76] )
+            elif((line.startswith('Suma de resultados')) & (line.find('64') != -1 )):
+                lineEdited = line.replace(".","").replace(",",".")
+                matches = valuesRegex.findall(lineEdited)             
+               
+                if(len(matches) > 0 ):   
+                    cuota = float(matches[0]) 
+           
         
-           #TODO ELIF Atribuible a la Administración del Estado ( [46] + [58] + [76] )
+           # ELIF Atribuible a la Administración del Estado ( [46] + [58] + [76] )
             elif(line.startswith('Atribuible') & (line.find('66') != -1 ) & (line.find('65') != -1 ) ):
-                # print(month, "ACA ESTA EL MONTH _______________")
-                items = line.split()
-                # print(items)               
-                sheet1.cell(column= month,row=57, value = float(items[len(items)-1].replace(".","").replace(",",".")))           
+                
+                lineEdited = line.replace(".","").replace(",",".")
+                matches = valuesRegex.findall(lineEdited)             
+              
+                if(len(matches) > 0 ):
+                    cuota = float(matches[1])                
+                    sheet1.cell(column= month,row=57, value = cuota)
+            elif(line.startswith('IVA a la importación') & (line.find('77') != -1 )):
+                
+                lineEdited = line.replace(".","").replace(",",".")
+                matches = valuesRegex.findall(lineEdited)             
+                
+                if(len(matches) > 0 ):
+                    cuota = float(matches[0])                
+                    sheet1.cell(column= month,row=58, value = cuota)
+            elif(line.startswith('Cuotas a compensar') & (line.find('67') != -1 )):
+                
+                lineEdited = line.replace(".","").replace(",",".")
+                matches = valuesRegex.findall(lineEdited)             
+                
+                if(len(matches) > 0 ):
+                    cuota = float(matches[0])                
+                    sheet1.cell(column= month,row=59, value = cuota)
+                               
         
             # excel.save('Plantillas modelos impuestos UHY.xlsx')
 
