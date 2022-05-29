@@ -90,7 +90,7 @@ app.post('/uploadExcel', uploadMExcel, (req, res) => {
 });
 app.get('/convert', (request, response) => {
   pythonToExcelProcess = spawn('python', ['toexel.py']);
-
+  console.log('comenzo a convertir');
   let dataOfFile = { type, names: nameOfFiles };
   if (nameOfExcel !== 'Plantillas modelos impuestos UHY.xlsx') {
     dataOfFile = { ...dataOfFile, excelName: nameOfExcel };
