@@ -4,12 +4,15 @@ let cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const spawn = require('child_process').spawn;
 
 const port = process.env.PORT || 3000;
-const spawn = require('child_process').spawn;
 let pythonToExcelProcess;
 
 let nameOfFiles = [];
+let toExcelResponse = '';
+let type = {};
+let nameOfExcel = 'Plantillas modelos impuestos UHY.xlsx';
 
 const excels = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -45,9 +48,6 @@ const uploadMExcel = uploadExcel.fields([{ name: 'excelFile', maxCount: 1 }]);
 app.use(cors({ exposedHeaders: '*' }));
 app.use(express.json());
 
-let toExcelResponse = '';
-let type = {};
-let nameOfExcel = 'Plantillas modelos impuestos UHY.xlsx';
 app.post('/upload/:type/', uploadMultiple, (req, res) => {
   try {
     type = req.params.type;
