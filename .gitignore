@@ -7,8 +7,8 @@
 node_modules/
 dist/
 
-*.pdf
-*.xlsx
+# *.pdf
+# *.xlsx
 
 # Compiled Java class files
 *.class
