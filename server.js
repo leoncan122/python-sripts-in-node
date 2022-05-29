@@ -29,11 +29,15 @@ app.use(express.json());
 let toExcelResponse = '';
 let type = {};
 app.post('/upload/:id', uploadMultiple, (req, res) => {
+  try {
+    type = req.params.id;
+    const dataOfFile = { type, names: nameOfFiles };
+    // console.log(JSON.stringify(dataOfFile));
+    res.send({ data: true });
+  } catch (error) {
+    console.log(error);
+  }
   // console.log(req.files);
-  type = req.params.id;
-  const dataOfFile = { type, names: nameOfFiles };
-  // console.log(JSON.stringify(dataOfFile));
-  res.send({ data: true });
 });
 app.get('/convert', (request, response) => {
   pythonToExcelProcess = spawn('python', ['toexel.py']);
