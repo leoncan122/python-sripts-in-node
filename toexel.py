@@ -11,7 +11,6 @@ import json
 
  
 
-excel = openpyxl.load_workbook(filename = './Plantillas modelos impuestos UHY.xlsx')
 
 
 
@@ -37,8 +36,9 @@ bases = 0
 
 pattern = re.compile(r"([+-]?(?=\\.\\d|\\d)(?:\\d+)?(?:\\.?\\d*))(?:[eE]([+-]?\\d+))?,([+-]?(?=\\.\\d|\\d)(?:\\d+)?(?:\\.?\\d*))(?:[eE]([+-]?\\d+))?", re.IGNORECASE)
 
-def model111IRPF(file):
-
+def model111IRPF(file,excel):
+#    excelFileName = './excels/Plantillas modelos impuestos UHY.xlsx'
+   
    sheet1 = excel['IRPF 111']
    monthRegex = re.compile(r"(0?[1-9]|[1][0-2])$")
    month = ''
@@ -47,63 +47,163 @@ def model111IRPF(file):
        for page in pdf.pages:
            text = page.extract_text()
            for line in text.split('\n') :
-               #print(line.split())
+            #    print(line)
                if(line.find('Período') != -1):
-                   month = int(monthRegex.search(line).group(1)) + 3
-                   items = line.split()
-                #    print(month, ' ----------------------')
-                #    print(items)
+                   month = int(monthRegex.search(line).group(1)) + 3                
 
 
-               elif((line.startswith('Rendimientos dinerarios')) & (line.find('01')  != -1)): 
-                   items = line.split()
-                   perceptores = float(items[4].replace(".","").replace(",","."))
-                   percepciones = float(items[6].replace(".","").replace(",","."))
-                   retenciones = float(items[8].replace(".","").replace(",","."))
-                   sheet1.cell(column= month,row=8, value = perceptores)
-                   sheet1.cell(column= month,row=9, value = percepciones)
-                   sheet1.cell(column= month,row=10, value = retenciones)
+               elif((line.find('03')  != -1) & (line.find('02')  != -1) & (line.find('01')  != -1)):
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 1 ):  
+                        items = line.split()                                        
+                        index = items.index('01')
+                        perceptores = float(items[index + 1].replace(".","").replace(",","."))                        
+                        percepciones = float(matches[0])
+                        retenciones = float(matches[1])
+                        sheet1.cell(column= month,row=8, value = perceptores)
+                        sheet1.cell(column= month,row=9, value = percepciones)
+                        sheet1.cell(column= month,row=10, value = retenciones)
                elif((line.startswith('Rendimientos en especie')) & (line.find('04')  != -1)):
-                   #TODO
-                   items = line.split()
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 1 ):  
+                        items = line.split()                
+                        index = items.index('04')
+                        perceptores = float(items[index + 1].replace(".","").replace(",","."))                        
+                        percepciones = float(matches[0])
+                        retenciones = float(matches[1])
+                        sheet1.cell(column= month,row=14, value = perceptores)
+                        sheet1.cell(column= month,row=15, value = percepciones)
+                        sheet1.cell(column= month,row=16, value = retenciones)
 
-               elif((line.startswith('Rendimientos dinerarios')) & (line.find('07')  != -1)): 
-                   items = line.split()
-                #    print(items)
-                   perceptores = float(items[4].replace(".","").replace(",","."))
-                   percepciones = float(items[6].replace(".","").replace(",","."))
-                   retenciones = float(items[8].replace(".","").replace(",","."))
-                   sheet1.cell(column= month,row=20, value = perceptores)
-                   sheet1.cell(column= month,row=21, value = percepciones)
-                   sheet1.cell(column= month,row=22, value = retenciones)
+               elif((line.find('09')  != -1) & (line.find('08')  != -1) & (line.find('07')  != -1)):
+                    
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 1 ):  
+                        items = line.split()                
+                        index = items.index('07')
+                        perceptores = float(items[index + 1].replace(".","").replace(",","."))                        
+                        percepciones = float(matches[0])
+                        retenciones = float(matches[1])
+                        sheet1.cell(column= month,row=20, value = perceptores)
+                        sheet1.cell(column= month,row=21, value = percepciones)
+                        sheet1.cell(column= month,row=22, value = retenciones)
                elif((line.startswith('Rendimientos en especie')) & (line.find('10')  != -1)):
-                   print(line)
-                   #TODO
-                   items = line.split()
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 1 ):  
+                        items = line.split()                
+                        index = items.index('10')
+                        perceptores = float(items[index + 1].replace(".","").replace(",","."))                        
+                        percepciones = float(matches[0])
+                        retenciones = float(matches[1])
+                        sheet1.cell(column= month,row=26, value = perceptores)
+                        sheet1.cell(column= month,row=27, value = percepciones)
+                        sheet1.cell(column= month,row=28, value = retenciones)
                elif((line.startswith('Premios en metálico')) & (line.find('13')  != -1)):
-                   #TODO
-                   items = line.split()
-               elif((line.startswith('Premios en especie')) & (line.find('16')  != -1)):
-                   #TODO
-                   items = line.split() 
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 1 ):  
+                        items = line.split()                
+                        index = items.index('10')
+                        perceptores = float(items[index + 1].replace(".","").replace(",","."))                        
+                        percepciones = float(matches[0])
+                        retenciones = float(matches[1])
+                        sheet1.cell(column= month,row=32, value = perceptores)
+                        sheet1.cell(column= month,row=33, value = percepciones)
+                        sheet1.cell(column= month,row=34, value = retenciones)
+               elif((line.find('17')  != -1) & (line.find('16')  != -1)):
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 1 ):  
+                        items = line.split()                
+                        index = items.index('16')
+                        perceptores = float(items[index + 1].replace(".","").replace(",","."))                        
+                        percepciones = float(matches[0])
+                        retenciones = float(matches[1])
+                        sheet1.cell(column= month,row=38, value = perceptores)
+                        sheet1.cell(column= month,row=39, value = percepciones)
+                        sheet1.cell(column= month,row=40, value = retenciones) 
                elif((line.startswith('Percepciones dinerarias')) & (line.find('19')  != -1)):
-                   #TODO
-                   items = line.split()
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 1 ):  
+                        items = line.split()                
+                        index = items.index('19')
+                        perceptores = float(items[index + 1].replace(".","").replace(",","."))                        
+                        percepciones = float(matches[0])
+                        retenciones = float(matches[1])
+                        sheet1.cell(column= month,row=44, value = perceptores)
+                        sheet1.cell(column= month,row=45, value = percepciones)
+                        sheet1.cell(column= month,row=46, value = retenciones) 
+                   
                elif((line.startswith('Percepciones en especie')) & (line.find('22')  != -1)):
-                   #TODO
-                   items = line.split()
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 1 ):  
+                        items = line.split()                
+                        index = items.index('22')
+                        perceptores = float(items[index + 1].replace(".","").replace(",","."))                        
+                        percepciones = float(matches[0])
+                        retenciones = float(matches[1])
+                        sheet1.cell(column= month,row=50, value = perceptores)
+                        sheet1.cell(column= month,row=51, value = percepciones)
+                        sheet1.cell(column= month,row=52, value = retenciones) 
                elif((line.startswith('Contraprestaciones dinerarias o en especie')) & (line.find('25')  != -1)):
-                   #TODO
-                   items = line.split()
-               elif((line.startswith('Total liquidación')) & (line.find('25')  != -1)):
-                   #TODO
-                   items = line.split()
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 1 ):  
+                        items = line.split()                
+                        index = items.index('25')
+                        perceptores = float(items[index + 1].replace(".","").replace(",","."))                        
+                        percepciones = float(matches[0])
+                        retenciones = float(matches[1])
+                        sheet1.cell(column= month,row=57, value = perceptores)
+                        sheet1.cell(column= month,row=58, value = percepciones)
+                        sheet1.cell(column= month,row=59, value = retenciones) 
+               elif(line.find('28')  != -1):
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 0 ):
+                        retenciones = float(matches[0])
+                        # no hay row de referencia (?)
+                        sheet1.cell(column= month,row=64, value = retenciones) 
+               elif(line.find('Importe del ingreso')  != -1):
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 0 ):
+                        retenciones = float(matches[0])
+                        # no hay row de referencia (?)
+                        sheet1.cell(column= month,row=66, value = retenciones)
+               elif(line.find('Resultados a ingresar de anteriores autoliquidaciones')  != -1):
+                   
+                   lineEdited = line.replace(".","").replace(",",".")
+                   matches = valuesRegex.findall(lineEdited) 
+                   if(len(matches) > 0 ):
+                        retenciones = float(matches[0])
+                        # no hay row de referencia (?)
+                        sheet1.cell(column= month,row=65, value = retenciones) 
+                
+                
                
                #excel.save('Plantillas modelos impuestos UHY.xlsx') 
    
 
 
-def model303Iva(file):
+def model303Iva(file,excel):
+   
    month = ''
    sheet1 = excel['IVA']
    with pdfplumber.open(file) as pdf:
@@ -437,21 +537,28 @@ def model303Iva(file):
 def getDataFromPdfAndSaveExcel():
     data = json.loads(sys.stdin.readline())    
     sys.stdout.flush()
-    modelForm = data['type']   
+    modelForm = data['type']
+    if('excelName' in data):
+        exceFilelName = './excels/' + data['excelName']
+        # excel = openpyxl.load_workbook(filename = excelFileName)
+        print(data['excelName'])
+    else:
+       exceFilelName = './excels/Plantillas modelos impuestos UHY.xlsx' 
+    excel = openpyxl.load_workbook(filename = exceFilelName)   
     for name in data['names']:
         print(name)
         file = './uploads/' + name
         if(modelForm == "303"):
            print('pasa 303')
-           model303Iva(file)
+           model303Iva(file,excel)
            
            
 
         elif(modelForm == "111"):
            print('pasa 111')
-           model111IRPF(file)
+           model111IRPF(file,excel)
            
-    excel.save('Plantillas modelos impuestos UHY.xlsx')       
+    excel.save(exceFilelName)       
     sys.stdout.close()
     
     #excel.save('Plantillas modelos impuestos UHY.xlsx')
