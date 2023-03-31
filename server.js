@@ -100,7 +100,7 @@ app.get('/convert', (request, response) => {
 
     fs.copyFile(
       './Plantillas modelos impuestos UHY.xlsx',
-      './excels/Plantillas modelos impuestos UHY.xlsx',
+      './excels/Plantillas modelos impuestos UHY1.xlsx',
       (err) => {
         if (err) {
           throw err;
@@ -170,64 +170,6 @@ const deleteExcel = (file) => {
     if (err) throw err;
   });
 };
-
-
-
-app.get('/report', (request, response) => {
-  const context = {
-    "month": "December",
-    "masks": "32",
-    "covidLiterature": "12",
-    "vaccineRelatedLiterature": "65",
-    "hivRelatedLiterature": "32",
-    "hepCLiterature": "42",
-    "saferSexkits": "",
-    "healthDisparitiesLiterature": "21",
-    "bagsBoxesFood": "4",
-    "covidTests": "",
-    "hivTests": "",
-    "peopleTested": "",
-    "womenTest": "",
-    "menTested": "2",
-    "blackPeople": "1",
-    "hispanicPeople": 4,
-    "americanIndianPeople": 21,
-    "whitePeople": "21",
-    "gayPeople": "",
-    "bisexualPeople": "",
-    "straightPeople": "",
-    "minAge": "4",
-    "maxAge": 21,
-    "numberChallenges": "3"
-  }
-  pythonToExcelProcess = spawn('python', ['nyscmpMonthlyReport.py'], {events, context});
-  console.log('comenzo a convertir');
-  let dataOfFile = { type, names: nameOfFiles };
-
-  
-  pythonToExcelProcess.stdout.on('data', (data) => {
-    toExcelResponse += data.toString();
-    console.log(toExcelResponse, 'data');
-  });
-  // pythonToExcelProcess.stdin.write(JSON.stringify(dataOfFile));
-  // console.log(JSON.stringify(dataOfFile));
-  // pythonToExcelProcess.on('close', (code) => {
-  //   console.log('code', code);
-  //   filesToDelete = nameOfFiles;
-  //   nameOfFiles = [];
-  //   console.log(filesToDelete);
-  //   deleteFiles(filesToDelete);
-  // });
-
-  // pythonToExcelProcess.stdin.end();
-  // pythonToExcelProcess.stdout.on('end', function () {
-  //   response.send({ coverted: true });
-  // });
-});
-
-app.listen(port, () => {
-  console.log('conextion correcta', port);
-});
 
 const events = [
   {
@@ -421,3 +363,102 @@ const events = [
   "posteventreportid": null
 }
 ]
+
+app.get('/report', (request, response) => {
+      
+  const context = {
+    "month": "December",
+    "masks": "32",
+    "covidLiterature": "12",
+    "vaccineRelatedLiterature": "65",
+    "hivRelatedLiterature": "32",
+    "hepCLiterature": "42",
+    "saferSexkits": "",
+    "healthDisparitiesLiterature": "21",
+    "bagsBoxesFood": "4",
+    "covidTests": "",
+    "hivTests": "",
+    "peopleTested": "",
+    "womenTest": "",
+    "menTested": "2",
+    "blackPeople": "1",
+    "hispanicPeople": 4,
+    "americanIndianPeople": 21,
+    "whitePeople": "21",
+    "gayPeople": "",
+    "bisexualPeople": "",
+    "straightPeople": "",
+    "minAge": "4",
+    "maxAge": 21,
+    "numberChallenges": "3"
+  }
+  pythonToExcelProcess = spawn('python', ['./monthlyReport.py']);
+  console.log('comenzo a convertir');
+  let dataOfFile = { type, names: nameOfFiles };
+
+  pythonToExcelProcess.stdout.on('error', (err) => {
+    console.log("err", err)
+  });
+  pythonToExcelProcess.stdout.on('data', (data) => {
+    console.log("data", data.toString())
+    // toExcelResponse += data.toString();
+    // console.log(toExcelResponse, 'data');
+  });
+  pythonToExcelProcess.stdin.write(JSON.stringify(dataOfFile));
+  console.log(JSON.stringify(dataOfFile));
+  pythonToExcelProcess.on('close', (code) => {
+    console.log('code', code);
+    filesToDelete = nameOfFiles;
+    nameOfFiles = [];
+    console.log(filesToDelete);
+    // deleteFiles(filesToDelete);
+  });
+
+  pythonToExcelProcess.stdin.end();
+  pythonToExcelProcess.stdout.on('end', function () {
+    response.send({ coverted: true });
+  });
+});
+
+app.get('/create-license', (request, response) => {
+  process = spawn('python', ['createlicense.py']);
+  console.log('comenzo a convertir');
+  let dataOfFile = { type, names: nameOfFiles };
+
+  // if (!fs.existsSync('./docx/LicensePlantilla.docx')) {
+  //   // dataOfFiles = { ...dataOfFile, excelName: nameOfExcel };
+
+  //   fs.copyFile(
+  //     './LicensePlantilla.docx',
+  //     './docx/LicensePlantilla.docx',
+  //     (err) => {
+  //       if (err) {
+  //         throw err;
+  //       }
+  //     }
+  //   );
+  // }
+  process.stdout.on('data', (data) => {
+    toExcelResponse += data.toString();
+    console.log(toExcelResponse, 'data');
+  });
+  // process.stdin.write(JSON.stringify(dataOfFile));
+  // console.log(JSON.stringify(dataOfFile));
+  process.on('close', (code) => {
+    // console.log('code', code);
+    filesToDelete = nameOfFiles;
+    nameOfFiles = [];
+    console.log(filesToDelete);
+    // deleteFiles(filesToDelete);
+  });
+
+  process.stdin.end();
+  process.stdout.on('end', function () {
+    response.send({ coverted: true });
+  });
+});
+
+app.listen(port, () => {
+  console.log('conextion correcta', port);
+});
+
